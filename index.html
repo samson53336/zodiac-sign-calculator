@@ -1,40 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Zodiac Sign Calculator</title>
-  <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Zodiac Calculator</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>Zodiac Sign Calculator</h1>
-      <p>Discover your zodiac sign with accurate astrological data</p>
-    </header>
+    <div class="container">
+        <header class="header">
+            <h1>Zodiac Sign Calculator</h1>
+            <p>Discover your zodiac sign with astronomical precision</p>
+        </header>
 
-    <form id="zodiacForm" class="zodiac-form">
-      <div class="form-group">
-        <label for="birthdate">Select Your Birth Date:</label>
-        <input type="date" id="birthdate" required min="1900-01-01" max="2051-12-31"/>
-      </div>
-      <button type="submit" class="submit-btn">Calculate My Sign</button>
-    </form>
+        <main class="main-content">
+            <form id="zodiacForm" class="zodiac-form">
+                <div class="input-group">
+                    <label for="birthdate">Your Birth Date:</label>
+                    <input type="date" 
+                           id="birthdate" 
+                           required 
+                           min="1900-01-01" 
+                           max="2025-12-31"
+                           class="date-input">
+                </div>
+                <button type="submit" class="calculate-btn">
+                    Calculate Zodiac Sign
+                </button>
+            </form>
 
-    <div id="error" class="error hidden"></div>
+            <!-- Error Display -->
+            <div id="error" class="error-message hidden" role="alert">
+                <span class="error-icon">⚠️</span>
+                <span class="error-text"></span>
+            </div>
 
-    <div id="result" class="result hidden">
-      <div class="sign-header">
-        <h2><span id="sign"></span> <span id="symbol" class="symbol"></span></h2>
-        <p class="date-range"><span id="dateRange"></span></p>
-        <p class="element">Element: <span id="element"></span></p>
-      </div>
-      <div class="insight-section">
-        <h3>Your Daily Insight</h3>
-        <p id="insight" class="insight-text"></p>
-      </div>
+            <!-- Results Display -->
+            <div id="result" class="result-panel hidden">
+                <div class="zodiac-header">
+                    <h2 class="zodiac-title">
+                        <span id="sign" class="sign-name"></span>
+                        <span id="symbol" class="zodiac-symbol"></span>
+                    </h2>
+                    <div class="zodiac-meta">
+                        <p class="date-range">
+                            <strong>Date Range:</strong> <span id="dateRange"></span>
+                        </p>
+                        <p class="element-info">
+                            <strong>Element:</strong> <span id="element"></span>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="insight-section">
+                    <h3>Daily Insight</h3>
+                    <p id="insight" class="insight-text">
+                        Your zodiac profile reveals unique characteristics and tendencies.
+                    </p>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>Based on traditional Western astrology date ranges</p>
+        </footer>
     </div>
-  </div>
-  <script src="script.js"></script>
+
+    <!-- Load the modular JavaScript -->
+    <script type="module" src="script.js"></script>
 </body>
 </html>
