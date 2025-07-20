@@ -1,100 +1,182 @@
-/* ------------------------------------------------------
-   zodiac-data.js  ➜ Pure data module (can be auto-tested)
-------------------------------------------------------- */
-export const ZODIAC_SIGNS = [
-  { name: 'Capricorn',  symbol: '♑', element: 'Earth',    start: [12, 22], end: [ 1, 19] },
-  { name: 'Aquarius',   symbol: '♒', element: 'Air',      start: [ 1, 20], end: [ 2, 18] },
-  { name: 'Pisces',     symbol: '♓', element: 'Water',    start: [ 2, 19], end: [ 3, 20] },
-  { name: 'Aries',      symbol: '♈', element: 'Fire',     start: [ 3, 21], end: [ 4, 19] },
-  { name: 'Taurus',     symbol: '♉', element: 'Earth',    start: [ 4, 20], end: [ 5, 20] },
-  { name: 'Gemini',     symbol: '♊', element: 'Air',      start: [ 5, 21], end: [ 6, 20] },
-  { name: 'Cancer',     symbol: '♋', element: 'Water',    start: [ 6, 21], end: [ 7, 22] },
-  { name: 'Leo',        symbol: '♌', element: 'Fire',     start: [ 7, 23], end: [ 8, 22] },
-  { name: 'Virgo',      symbol: '♍', element: 'Earth',    start: [ 8, 23], end: [ 9, 22] },
-  { name: 'Libra',      symbol: '♎', element: 'Air',      start: [ 9, 23], end: [10, 22] },
-  { name: 'Scorpio',    symbol: '♏', element: 'Water',    start: [10, 23], end: [11, 21] },
-  { name: 'Sagittarius',symbol: '♐', element: 'Fire',     start: [11, 22], end: [12, 21] }
+// Zodiac Calculator with Cusp, Compatibility, Moon & Rising Support + Gemstones
+
+const zodiacSigns = [
+  { sign: "Capricorn", start: "12-22", end: "01-19" },
+  { sign: "Aquarius", start: "01-20", end: "02-18" },
+  { sign: "Pisces", start: "02-19", end: "03-20" },
+  { sign: "Aries", start: "03-21", end: "04-19" },
+  { sign: "Taurus", start: "04-20", end: "05-20" },
+  { sign: "Gemini", start: "05-21", end: "06-20" },
+  { sign: "Cancer", start: "06-21", end: "07-22" },
+  { sign: "Leo", start: "07-23", end: "08-22" },
+  { sign: "Virgo", start: "08-23", end: "09-22" },
+  { sign: "Libra", start: "09-23", end: "10-22" },
+  { sign: "Scorpio", start: "10-23", end: "11-21" },
+  { sign: "Sagittarius", start: "11-22", end: "12-21" }
 ];
 
-/* Daily insights or any other metadata can live in a
-   separate JSON file that you fetch asynchronously.
-*/
+const compatibility = {
+  Aries: ["Leo", "Sagittarius", "Gemini", "Aquarius"],
+  Taurus: ["Virgo", "Capricorn", "Cancer", "Pisces"],
+  Gemini: ["Libra", "Aquarius", "Aries", "Leo"],
+  Cancer: ["Scorpio", "Pisces", "Taurus", "Virgo"],
+  Leo: ["Aries", "Sagittarius", "Gemini", "Libra"],
+  Virgo: ["Taurus", "Capricorn", "Cancer", "Scorpio"],
+  Libra: ["Gemini", "Aquarius", "Leo", "Sagittarius"],
+  Scorpio: ["Cancer", "Pisces", "Virgo", "Capricorn"],
+  Sagittarius: ["Aries", "Leo", "Libra", "Aquarius"],
+  Capricorn: ["Taurus", "Virgo", "Scorpio", "Pisces"],
+  Aquarius: ["Gemini", "Libra", "Aries", "Sagittarius"],
+  Pisces: ["Cancer", "Scorpio", "Taurus", "Capricorn"]
+};
 
-/* ------------------------------------------------------
-   zodiac-service.js ➜ Validation & core calculations
-------------------------------------------------------- */
-import { ZODIAC_SIGNS } from './zodiac-data.js';
+const gemstones = {
+  Aries: ["Red Coral", "Carnelian"],
+  Taurus: ["Emerald", "Rose Quartz"],
+  Gemini: ["Emerald", "Citrine"],
+  Cancer: ["Pearl", "Moonstone"],
+  Leo: ["Ruby", "Sunstone"],
+  Virgo: ["Emerald", "Peridot"],
+  Libra: ["Diamond", "Lapis Lazuli"],
+  Scorpio: ["Red Coral", "Garnet"],
+  Sagittarius: ["Yellow Sapphire", "Turquoise"],
+  Capricorn: ["Blue Sapphire", "Onyx"],
+  Aquarius: ["Blue Sapphire", "Amethyst"],
+  Pisces: ["Yellow Sapphire", "Aquamarine"]
+};
 
-export class ZodiacService {
-  static #MIN_DATE = new Date('1900-01-01');
+function calculateZodiacSign(birthDate) {
+  const date = new Date(birthDate);
+  if (isNaN(date)) return null;
 
-  /** Validate and normalise input to a Date object */
-  static parseBirthDate(value) {
-    if (!value) throw new Error('Please select a birth date');
-    const date = new Date(value);
-    if (Number.isNaN(date)) throw new Error('Invalid date format');
-    if (date > new Date()) throw new Error('Birth date cannot be in the future');
-    if (date < this.#MIN_DATE) throw new Error('Birth date too far in the past');
-    return date;
-  }
+  const month = date.getUTCMonth() + 1;
+  const day = date.getUTCDate();
+  const padded = `${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
 
-  /** Return full zodiac record (name, symbol, element, etc.) */
-  static getZodiac(date) {
-    const m = date.getUTCMonth() + 1;    // 1-based
-    const d = date.getUTCDate();
+  for (let i = 0; i < zodiacSigns.length; i++) {
+    const { sign, start, end } = zodiacSigns[i];
+    const startDate = new Date(`2020-${start}`);
+    const endDate = new Date(`2020-${end}`);
+    const inputDate = new Date(`2020-${padded}`);
 
-    for (const sign of ZODIAC_SIGNS) {
-      const [sm, sd] = sign.start;
-      const [em, ed] = sign.end;
-
-      const crossesYear = sm > em; // e.g. Capricorn
-      const afterStart  = (m === sm && d >= sd) || (m > sm && (!crossesYear || m <= 12));
-      const beforeEnd   = (m === em && d <= ed) || (m < em || (crossesYear && m >= 1));
-
-      if (crossesYear ? (afterStart || beforeEnd) : (afterStart && beforeEnd)) {
-        return sign;
+    if (start > end) {
+      if (
+        (inputDate >= startDate && inputDate <= new Date("2020-12-31")) ||
+        (inputDate >= new Date("2020-01-01") && inputDate <= endDate)
+      ) {
+        return {
+          sign,
+          cusp: getCusp(month, day),
+          compatible: compatibility[sign],
+          stones: gemstones[sign]
+        };
       }
+    } else if (inputDate >= startDate && inputDate <= endDate) {
+      return {
+        sign,
+        cusp: getCusp(month, day),
+        compatible: compatibility[sign],
+        stones: gemstones[sign]
+      };
     }
-    throw new Error('Unable to determine zodiac sign');
   }
-
-  /** Utility for “March 21 – April 19” style ranges */
-  static formatRange({ start, end }) {
-    const monthNames = [ '', 'January','February','March','April','May','June',
-                         'July','August','September','October','November','December' ];
-    return `${monthNames[start[0]]} ${start[1]} – ${monthNames[end[0]]} ${end[1]}`;
-  }
+  return null;
 }
 
-/* ------------------------------------------------------
-   app.js ➜ DOM wiring (kept tiny)
-------------------------------------------------------- */
-import { ZodiacService } from './zodiac-service.js';
+function getCusp(month, day) {
+  const cuspWindow = 2;
+  for (const z of zodiacSigns) {
+    const [startMonth, startDay] = z.start.split("-").map(Number);
+    const [endMonth, endDay] = z.end.split("-").map(Number);
 
-document.addEventListener('DOMContentLoaded', () => {
-  const form   = document.getElementById('zodiacForm');
-  const out    = id => document.getElementById(id);
-  const hidden = el => el.classList.add('hidden');
-  const show   = el => el.classList.remove('hidden');
+    const isCuspStart = month === startMonth && Math.abs(day - startDay) <= cuspWindow;
+    const isCuspEnd = month === endMonth && Math.abs(day - endDay) <= cuspWindow;
 
-  form?.addEventListener('submit', e => {
-    e.preventDefault();
-    ['result','error'].forEach(id => hidden(out(id)));
-
-    try {
-      const bd   = ZodiacService.parseBirthDate(out('birthdate').value);
-      const sign = ZodiacService.getZodiac(bd);
-
-      out('sign').textContent      = sign.name;
-      out('symbol').textContent    = sign.symbol;
-      out('element').textContent   = sign.element;
-      out('dateRange').textContent = ZodiacService.formatRange(sign);
-      // out('insight').textContent = fetchedInsight[sign.name]; // optional
-
-      show(out('result'));
-    } catch (err) {
-      out('error').textContent = err.message;
-      show(out('error'));
+    if (isCuspStart || isCuspEnd) {
+      return `Cusp of ${z.sign}`;
     }
-  });
+  }
+  return null;
+}
+
+function generateZodiacInfo(birthDate) {
+  const result = calculateZodiacSign(birthDate);
+  if (!result) return "Invalid date or format";
+
+  let message = `🌟 Your Zodiac Sign: ${result.sign}\n`;
+  if (result.cusp) message += `⚖️ Cusp Info: ${result.cusp}\n`;
+  message += `❤️ Compatible With: ${result.compatible.join(", ")}\n`;
+  message += `💎 Recommended Gemstones: ${result.stones.join(", ")}`;
+
+  return message;
+}
+
+function calculateMoonAndRising(birthDate, birthTime, location) {
+  return {
+    moonSign: "(coming soon)",
+    risingSign: "(coming soon)"
+  };
+}
+
+// Form Integration with HTML
+
+document.getElementById("zodiacForm").addEventListener("submit", function (e) {
+  e.preventDefault();
+  const birthdate = document.getElementById("birthdate").value;
+  const result = calculateZodiacSign(birthdate);
+
+  if (!result) {
+    document.getElementById("error").classList.remove("hidden");
+    document.getElementById("error").textContent = "Please enter a valid birthdate.";
+    document.getElementById("result").classList.add("hidden");
+    return;
+  }
+
+  document.getElementById("error").classList.add("hidden");
+  document.getElementById("result").classList.remove("hidden");
+  document.getElementById("sign").textContent = result.sign;
+  document.getElementById("dateRange").textContent = `${zodiacSigns.find(z => z.sign === result.sign).start} - ${zodiacSigns.find(z => z.sign === result.sign).end}`;
+  document.getElementById("element").textContent = getElement(result.sign);
+  document.getElementById("symbol").textContent = getSymbol(result.sign);
+  document.getElementById("insight").textContent = `Gemstones: ${result.stones.join(", ")} | Compatible with: ${result.compatible.join(", ")}`;
 });
+
+function getElement(sign) {
+  const elements = {
+    Fire: ["Aries", "Leo", "Sagittarius"],
+    Earth: ["Taurus", "Virgo", "Capricorn"],
+    Air: ["Gemini", "Libra", "Aquarius"],
+    Water: ["Cancer", "Scorpio", "Pisces"]
+  };
+  for (const [element, signs] of Object.entries(elements)) {
+    if (signs.includes(sign)) return element;
+  }
+  return "";
+}
+
+function getSymbol(sign) {
+  const symbols = {
+    Aries: "♈",
+    Taurus: "♉",
+    Gemini: "♊",
+    Cancer: "♋",
+    Leo: "♌",
+    Virgo: "♍",
+    Libra: "♎",
+    Scorpio: "♏",
+    Sagittarius: "♐",
+    Capricorn: "♑",
+    Aquarius: "♒",
+    Pisces: "♓"
+  };
+  return symbols[sign] || "";
+}
+
+
+// Optional: Restrict date input to valid range
+const dateInput = document.getElementById("birthdate");
+if (dateInput) {
+  const today = new Date().toISOString().split("T")[0];
+  dateInput.setAttribute("max", today);
+  dateInput.setAttribute("min", "1900-01-01");
+}
